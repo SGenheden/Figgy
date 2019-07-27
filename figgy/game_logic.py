@@ -21,7 +21,7 @@ class Block(Actor):
         the origin of this block on which it will be rotated
     """
 
-    block_size = 32
+    block_size = 24
 
     def __init__(self, image, origin):
         pos = (origin["x"] + 6, origin["y"] + 1)

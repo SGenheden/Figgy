@@ -11,7 +11,8 @@ def main(color, name):
     alt_color = np.ones(3) - color / 2
     fig = plt.figure(figsize=(Block.block_size, Block.block_size), dpi=1)
     mat = np.zeros((Block.block_size, Block.block_size, 3))
-    mat[:, :] = alt_color
+    mat[:, :] = [0.7, 0.7, 0.7]
+    mat[1:-1, 1:-1] = alt_color
     mat[2:-2, 2:-2] = color
     fig.gca().axis("off")
     fig.gca().imshow(mat, extent=(0, Block.block_size, 0, Block.block_size))
