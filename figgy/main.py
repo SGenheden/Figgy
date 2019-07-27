@@ -10,6 +10,14 @@ engine = Engine(clock)
 def draw():
     screen.fill((255, 255, 255))
     engine.draw()
+    if not engine.is_running:
+        screen.draw.text(
+            "Press N key to start game!",
+            centerx=0.5 * WIDTH,
+            centery=0.5 * HEIGHT,
+            shadow=(0.5, 0.5),
+            color=(0, 200, 0),
+        )
 
 
 def on_key_down():

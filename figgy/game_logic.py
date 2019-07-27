@@ -246,13 +246,16 @@ class Engine:
 
     scene_height = 25
     scene_width = 12
+    default_tick_interval = 1.25
 
     def __init__(self, clock):
         self._current = None
         self._blocks = {}
-        self._is_running = False
+        self.is_running = False
         self._is_dropping = False
         self._clock = clock
+        self._tick_interval = self.default_tick_interval
+        self._completed_lines = 0
 
         figgy_path = os.path.dirname(os.path.abspath(__file__))
         filename = os.path.join(figgy_path, "templates.json")
@@ -264,7 +267,7 @@ class Engine:
     def draw(self):
         """ Draw all blocks and falling objects on the scene
         """
-        if not self._is_running:
+        if not self.is_running:
             return
 
         for _, block in self._blocks.items():
@@ -274,28 +277,30 @@ class Engine:
     def drop(self):
         """ Drop the currently falling object
         """
+        if not self.is_running:
+            return
         self._is_dropping = True
         self._clock.unschedule(self._tick)
-        self._clock.schedule_interval(self._tick, 0.05)
+        self._clock.schedule_interval(self._tick, 0.01)
 
     def move_left(self):
         """ Move the currently falling object to the left
         """
-        if self._is_dropping:
+        if not self.is_running or self._is_dropping:
             return
         self._current.move_left(self._blocks)
 
     def move_right(self):
         """ Move the currently falling object to the right
         """
-        if self._is_dropping:
+        if not self.is_running or self._is_dropping:
             return
         self._current.move_right(self._blocks)
 
     def rotate(self):
         """ Rotate the currently falling object
         """
-        if self._is_dropping:
+        if not self.is_running or self._is_dropping:
             return
         self._current.rotate(self._blocks)
 
@@ -303,19 +308,24 @@ class Engine:
         """ Starts a new game
         """
         self._blocks = {}
-        self._is_running = True
+        self.is_running = True
+        self._tick_interval = self.default_tick_interval
+        self._completed_lines = 0
         self._new_falling_object()
 
     def _check_lines(self):
         for line in range(self.scene_height):
             if all((col, line) in self._blocks for col in range(self.scene_width)):
                 self._remove_line(line)
+                self._completed_lines += 1
+                if self._completed_lines % 4 == 0:
+                    self._tick_interval = max(0.02, self._tick_interval-0.1)
 
     def _handle_fall_failure(self):
         self._is_dropping = False
         self._clock.unschedule(self._tick)
         if not self._current.fallen:  # Stop game
-            self._is_running = False
+            self.is_running = False
         else:
             self._blocks.update(self._current.to_dict())
             self._check_lines()
@@ -325,7 +335,7 @@ class Engine:
         self._current = FallingObject(
             object_templates=self._object_templates, images=self._images
         )
-        self._clock.schedule_interval(self._tick, 1.5)
+        self._clock.schedule_interval(self._tick, self._tick_interval)
 
     def _remove_line(self, line_to_remove):
         for col in range(self.scene_width):
