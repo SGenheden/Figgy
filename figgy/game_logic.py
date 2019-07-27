@@ -27,7 +27,7 @@ class Block(Actor):
         pos = (origin["x"] + 6, origin["y"] + 1)
         real_pos = pos[0] * self.block_size, pos[1] * self.block_size
         super().__init__(image, real_pos, (0, 0))
-        self.gridpos = pos
+        self.grid_pos = pos
         self.origin = (origin["x"], origin["y"])
 
     def move(self, dx, dy):
@@ -41,8 +41,8 @@ class Block(Actor):
         dy: int
             the delta in y
         """
-        self.gridpos = (self.gridpos[0] + dx, self.gridpos[1] + dy)
-        self.pos = self.gridpos[0] * self.block_size, self.gridpos[1] * self.block_size
+        self.grid_pos = (self.grid_pos[0] + dx, self.grid_pos[1] + dy)
+        self.pos = self.grid_pos[0] * self.block_size, self.grid_pos[1] * self.block_size
 
     def rotate(self):
         """
@@ -55,12 +55,12 @@ class Block(Actor):
         tempy = round(
             self.origin[0] * math.sin(angle) + self.origin[1] * math.cos(angle)
         )
-        self.gridpos = (
-            tempx + (self.gridpos[0] - self.origin[0]),
-            tempy + (self.gridpos[1] - self.origin[1]),
+        self.grid_pos = (
+            tempx + (self.grid_pos[0] - self.origin[0]),
+            tempy + (self.grid_pos[1] - self.origin[1]),
         )
         self.origin = (tempx, tempy)
-        self.pos = self.gridpos[0] * self.block_size, self.gridpos[1] * self.block_size
+        self.pos = self.grid_pos[0] * self.block_size, self.grid_pos[1] * self.block_size
 
 
 class FallFailure(Exception):
@@ -175,29 +175,29 @@ class FallingObject:
         dict:
             the dictionary representation of this object
         """
-        return {(block.gridpos[0], block.gridpos[1]): block for block in self._blocks}
+        return {(block.grid_pos[0], block.grid_pos[1]): block for block in self._blocks}
 
     def _bottom_most(self):
-        return max([block.gridpos[1] for block in self._blocks])
+        return max([block.grid_pos[1] for block in self._blocks])
 
     def _can_fall(self, fixed_blocks):
         for block in self._blocks:
-            query_pos = (block.gridpos[0], block.gridpos[1] + 1)
-            if block.gridpos[1] == Engine.scene_height - 1 or query_pos in fixed_blocks:
+            query_pos = (block.grid_pos[0], block.grid_pos[1] + 1)
+            if block.grid_pos[1] == Engine.scene_height - 1 or query_pos in fixed_blocks:
                 return False
         return True
 
     def _can_move_left(self, fixed_blocks):
         for block in self._blocks:
-            query_pos = (block.gridpos[0] - 1, block.gridpos[1])
-            if block.gridpos[0] == 0 or query_pos in fixed_blocks:
+            query_pos = (block.grid_pos[0] - 1, block.grid_pos[1])
+            if block.grid_pos[0] == 0 or query_pos in fixed_blocks:
                 return False
         return True
 
     def _can_move_right(self, fixed_blocks):
         for block in self._blocks:
-            query_pos = (block.gridpos[0] + 11, block.gridpos[1])
-            if block.gridpos[0] == Engine.scene_width - 1 or query_pos in fixed_blocks:
+            query_pos = (block.grid_pos[0] + 1, block.grid_pos[1])
+            if block.grid_pos[0] == Engine.scene_width - 1 or query_pos in fixed_blocks:
                 return False
         return True
 
@@ -207,7 +207,7 @@ class FallingObject:
             block.rotate()
         invalid = self._is_outside()
         for block in self._blocks:
-            if block.gridpos in fixed_blocks:
+            if block.grid_pos in fixed_blocks:
                 invalid = True
                 break
         for _ in range(3):
@@ -225,13 +225,13 @@ class FallingObject:
         )
 
     def _left_most(self):
-        return min([block.gridpos[0] for block in self._blocks])
+        return min([block.grid_pos[0] for block in self._blocks])
 
     def _right_most(self):
-        return max([block.gridpos[0] for block in self._blocks])
+        return max([block.grid_pos[0] for block in self._blocks])
 
     def _top_most(self):
-        return min([block.gridpos[1] for block in self._blocks])
+        return min([block.grid_pos[1] for block in self._blocks])
 
 
 class Engine:
