@@ -42,7 +42,10 @@ class Block(Actor):
             the delta in y
         """
         self.grid_pos = (self.grid_pos[0] + dx, self.grid_pos[1] + dy)
-        self.pos = self.grid_pos[0] * self.block_size, self.grid_pos[1] * self.block_size
+        self.pos = (
+            self.grid_pos[0] * self.block_size,
+            self.grid_pos[1] * self.block_size,
+        )
 
     def rotate(self):
         """
@@ -60,7 +63,10 @@ class Block(Actor):
             tempy + (self.grid_pos[1] - self.origin[1]),
         )
         self.origin = (tempx, tempy)
-        self.pos = self.grid_pos[0] * self.block_size, self.grid_pos[1] * self.block_size
+        self.pos = (
+            self.grid_pos[0] * self.block_size,
+            self.grid_pos[1] * self.block_size,
+        )
 
 
 class FallFailure(Exception):
@@ -86,7 +92,7 @@ class FallingObject:
         name = os.path.splitext(filename)[0]
 
         object_ = random.choice(object_templates)
-        self._kind = object_templates.index(object_)
+        self._symmetric = self._is_completely_symmetric(object_)
         self._blocks = [Block(name, origo) for origo in object_]
         self._hidden = False
         self._fallen = False
@@ -160,7 +166,7 @@ class FallingObject:
         fixed_blocks: dict
             a dictionary of fixed blocks
         """
-        if self._kind == 0:  # Don't rotate the square box
+        if self._symmetric:  # Don't rotate the square box
             return
         if self._can_rotate(fixed_blocks):
             for block in self._blocks:
@@ -183,7 +189,10 @@ class FallingObject:
     def _can_fall(self, fixed_blocks):
         for block in self._blocks:
             query_pos = (block.grid_pos[0], block.grid_pos[1] + 1)
-            if block.grid_pos[1] == Engine.scene_height - 1 or query_pos in fixed_blocks:
+            if (
+                block.grid_pos[1] == Engine.scene_height - 1
+                or query_pos in fixed_blocks
+            ):
                 return False
         return True
 
@@ -233,6 +242,17 @@ class FallingObject:
     def _top_most(self):
         return min([block.grid_pos[1] for block in self._blocks])
 
+    @staticmethod
+    def _is_completely_symmetric(template):
+        midx = sum(piece["x"] for piece in template) / float(len(template))
+        midy = sum(piece["y"] for piece in template) / float(len(template))
+        distances = [
+            (piece["x"] - midx) * (piece["x"] - midx)
+            + (piece["y"] - midy) * (piece["y"] - midy)
+            for piece in template
+        ]
+        return all(dist - distances[0] == 0 for dist in distances)
+
 
 class Engine:
     """
@@ -252,6 +272,7 @@ class Engine:
         self._current = None
         self._blocks = {}
         self.is_running = False
+        self._is_pausing = False
         self._is_dropping = False
         self._clock = clock
         self._tick_interval = self.default_tick_interval
@@ -277,7 +298,7 @@ class Engine:
     def drop(self):
         """ Drop the currently falling object
         """
-        if not self.is_running:
+        if not self.is_running or self._is_pausing:
             return
         self._is_dropping = True
         self._clock.unschedule(self._tick)
@@ -286,21 +307,31 @@ class Engine:
     def move_left(self):
         """ Move the currently falling object to the left
         """
-        if not self.is_running or self._is_dropping:
+        if not self.is_running or self._is_pausing or self._is_dropping:
             return
         self._current.move_left(self._blocks)
 
     def move_right(self):
         """ Move the currently falling object to the right
         """
-        if not self.is_running or self._is_dropping:
+        if not self.is_running or self._is_pausing or self._is_dropping:
             return
         self._current.move_right(self._blocks)
+
+    def pause_game(self):
+        if not self.is_running or self._is_dropping:
+            return
+
+        if self._is_pausing:
+            self._clock.schedule_interval(self._tick, self._tick_interval)
+        else:
+            self._clock.unschedule(self._tick)
+        self._is_pausing = not self._is_pausing
 
     def rotate(self):
         """ Rotate the currently falling object
         """
-        if not self.is_running or self._is_dropping:
+        if not self.is_running or self._is_pausing or self._is_dropping:
             return
         self._current.rotate(self._blocks)
 
@@ -309,6 +340,7 @@ class Engine:
         """
         self._blocks = {}
         self.is_running = True
+        self._is_pausing = False
         self._tick_interval = self.default_tick_interval
         self._completed_lines = 0
         self._new_falling_object()
@@ -319,7 +351,7 @@ class Engine:
                 self._remove_line(line)
                 self._completed_lines += 1
                 if self._completed_lines % 4 == 0:
-                    self._tick_interval = max(0.02, self._tick_interval-0.1)
+                    self._tick_interval = max(0.02, self._tick_interval - 0.1)
 
     def _handle_fall_failure(self):
         self._is_dropping = False

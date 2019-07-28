@@ -23,6 +23,10 @@ def draw():
 def on_key_down():
     if keyboard.n:
         engine.start_game()
+    elif keyboard.p:
+        engine.pause_game()
+    elif keyboard.q:
+        exit()
     elif keyboard.left:
         engine.move_left()
     elif keyboard.right:
