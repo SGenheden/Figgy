@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup (
     name='Figgy',
-    version="0.0.1",
+    version="0.0.2",
     description='Tetris-like game',
     long_description=open('README.md').read(),
     url='https://github.com/sgenheden/Figgy',
@@ -12,7 +12,7 @@ setup (
 
     packages=['figgy', 'figgy/utils', 'figgy/images'],
     package_data= {
-        "": ["*.png"]
+        "": ["*.png", "*.json"]
     },
     install_requires=['pgzero', 'matplotlib', 'black',],
     entry_points={'console_scripts': ['figgy = figgy.utils.runner:main', ]},
