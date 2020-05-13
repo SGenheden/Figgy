@@ -10,7 +10,10 @@ setup (
     author_email='samuel.genheden@gmail.com',
     license='GNU General Public Licence',
 
-    packages=['figgy',],
+    packages=['figgy', 'figgy/utils', 'figgy/images'],
+    package_data= {
+        "": ["*.png"]
+    },
     install_requires=['pgzero', 'matplotlib', 'black',],
     entry_points={'console_scripts': ['figgy = figgy.utils.runner:main', ]},
 )
