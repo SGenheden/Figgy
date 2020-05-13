@@ -133,7 +133,7 @@ def test_rotate_blocked_by_boundary(new_object):
     object_.rotate({})
 
     new_pos = list(object_.to_dict().keys())
-    for idx, (pos1, pos2) in enumerate(zip(old_pos, new_pos)):
+    for pos1, pos2 in zip(old_pos, new_pos):
         assert pos1[0] == pos2[0]
         assert pos1[1] == pos2[1]
 
@@ -148,6 +148,6 @@ def test_rotate_blocked_by_block(new_object):
     object_.rotate(fake_blocks)
 
     new_pos = list(object_.to_dict().keys())
-    for idx, (pos1, pos2) in enumerate(zip(old_pos, new_pos)):
+    for pos1, pos2 in zip(old_pos, new_pos):
         assert pos1[0] == pos2[0]
         assert pos1[1] == pos2[1]

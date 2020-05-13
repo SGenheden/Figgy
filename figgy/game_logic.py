@@ -140,7 +140,7 @@ class FallingObject:
         fixed_blocks: dict
             a dictionary of fixed blocks
         """
-        if self._top_most() > 1 and self._can_move_left(fixed_blocks):
+        if self._top_most() >= 0 and self._can_move_left(fixed_blocks):
             for block in self._blocks:
                 block.move(-1, 0)
 
@@ -153,7 +153,7 @@ class FallingObject:
         fixed_blocks: dict
             a dictionary of fixed blocks
         """
-        if self._top_most() > 1 and self._can_move_right(fixed_blocks):
+        if self._top_most() >= 0 and self._can_move_right(fixed_blocks):
             for block in self._blocks:
                 block.move(+1, 0)
 
