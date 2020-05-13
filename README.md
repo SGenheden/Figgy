@@ -8,10 +8,10 @@ Badges
 
 Installation
 ============
-To install this tool, clone or download the git repository. Change to the downloaded directory and install the software with
+To install this tool, use pip.
 
 ```
-pip install .
+pip install https://github.com/SGenheden/Figgy/archive/v0.0.2.tar.gz
 ```
 
 Examples
